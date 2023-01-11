@@ -5,7 +5,9 @@ from django.db import models
 # Create your models here.
 class Director(models.Model):
     name = models.CharField(max_length=255, verbose_name="Имя режиссера")
-
+    @property
+    def movie_counts(self):
+        return self.movie_set.all().count()
     def __str__(self):
         return self.name
 
