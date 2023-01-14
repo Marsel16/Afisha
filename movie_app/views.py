@@ -9,6 +9,7 @@ from rest_framework import status
 
 @api_view(["GET", "POST"])
 def directors_view(request):
+    print(request.user)
     if request.method == "GET":
         directors = Director.objects.all()
         serializer = DirectorSerializer(instance=directors, many=True)
