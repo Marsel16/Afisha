@@ -5,21 +5,23 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from .serializers import UserValidateSerializer, UserCreateSerializer
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
+
+class AuthorizationCreateAPIView(APIView):
+    def post(self, request):
+        serializer = UserValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = authenticate(**serializer.validated_data)
+        if user:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response(data={'token': token.key})
+        return Response(status=status.HTTP_401_UNAUTHORIZED,
+                        data={'error_message': 'User not found'})
 
 
-@api_view(['POST'])
-def authorization_view(request):
-    serializer = UserValidateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = authenticate(**serializer.validated_data)
-    if user:
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(data={'token': token.key})
-    return Response(status=status.HTTP_401_UNAUTHORIZED,
-                    data={'error_message': 'User not found'})
-@api_view(['POST'])
-def register_view(request):
-    serializer = UserCreateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    User.objects.create_user(**serializer.validated_data)
-    return Response(status=status.HTTP_201_CREATED)
+class RegisterCreateAPIView(APIView):
+    def post(self, request):
+        serializer = UserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        User.objects.create_user(**serializer.validated_data)
+        return Response(status=status.HTTP_201_CREATED)
